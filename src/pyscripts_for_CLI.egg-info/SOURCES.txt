@@ -1,0 +1,10 @@
+pyproject.toml
+src/feather/__init__.py
+src/feather/fmore.py
+src/feather/test/__init__.py
+src/feather/test/test_fmore.py
+src/pyscripts_for_CLI.egg-info/PKG-INFO
+src/pyscripts_for_CLI.egg-info/SOURCES.txt
+src/pyscripts_for_CLI.egg-info/dependency_links.txt
+src/pyscripts_for_CLI.egg-info/requires.txt
+src/pyscripts_for_CLI.egg-info/top_level.txt

@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: pyscripts_for_CLI
+Version: 0.1.0
+Summary: Scripts to use in a Linux terminal window
+Author-email: Andreas Paepcke <paepcke@cs.stanford.edu>
+Maintainer-email: Andreas Paepcke <paepcke@cs.stanford.edu>
+License: MIT License
+Project-URL: Homepage, https://github.com/paepcke/pyscripts_for_CLI
+Project-URL: Documentation, https://github.com/paepcke/pyscripts_for_CLI
+Project-URL: Repository, https://github.com/paepcke/pyscripts_for_CLI
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pandas>=2.2.2
+Requires-Dist: pyarrow>=16.0.0
