@@ -12,12 +12,16 @@ Each tool operates in the spirit of the analogous Unix shell commands. Only the 
 
 ## Installation:
 ```
-pip install feather-tools
+- Create virtual environment if desired
+- pip install feather-tools
+- pip install .
 ```
 
 For convenience, you might symlink the above files to where they are accessible from different directories. For example, `/usr/local/bin`.
 
 ## Usage:
+
+All Python imports are relative to `<proj-root>/src`. So ensure that your $PYTHONPATH includes that directory.
 
 ### `fmore` a.k.a. `fless`
 ```
