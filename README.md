@@ -39,6 +39,9 @@ Shows one screenful of the .feather file at a time. The number rows displayed is
 ### `ftail <fpath> [(-n | --lines) n]`
 Displays the last *n* rows of the .feather file. Default is the lesser of 10, and the length of the data.
 
+**NOTE**: Starts the row display with the logical (i.e. terminal-height) page that contains the first line specified by the tail default or in the `--lines` argument. So a few more rows than
+requested may be displayed at the top.
+
 ### `fwc <fpath>`
 Is analogout to the Unix `wc -l`, and shows the number of data rows, not counting the column header.
 
