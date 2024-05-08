@@ -161,3 +161,4 @@ cython_debug/
 .project
 .pydevproject
 .settings/
+src/.DS_Store

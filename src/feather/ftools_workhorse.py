@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 Created on May 1, 2024
 
@@ -8,10 +7,10 @@ TODO:
    o Long rows: early rows not shown
    o 'begin' ('B', 'b' commands) don't show the columns again.
    o getchr() works in interactive Python shell, but not
-       in Eclipse or inside FMore application
+       in Eclipse or inside FToolsWorkhorse application
 '''
 from pathlib import Path
-from pip._vendor.typing_extensions import Self
+import bisect
 import io
 import os
 import pandas as pd
@@ -21,7 +20,9 @@ import sys
 import termios
 import tty
 
-class FMore:
+#  -------------------------- Class FToolsWorkhorse --------------
+            
+class FToolsWorkhorse:
     '''
     classdocs
     '''
@@ -48,13 +49,16 @@ class FMore:
         :type unittesting: bool
         '''
         
-        help_str = 'cr or spacebar: next; b: back; s: start; e: end; q: quit. (Any key to continue...)'
+        self.help_str = 'cr or spacebar: next; b: back; s: start; e: end; q: quit. (Any key to continue...)'
         
         self.term_cols, self.term_lines = shutil.get_terminal_size()
         if lines is not None:
             self.term_lines = lines
         if cols is not None:
             self.term_cols = cols
+            
+        self.out_stream = out_stream
+        
             
         if type(path) != str:
             raise TypeError(f"Path must be string or file-like, not {type(path)}")
@@ -68,12 +72,12 @@ class FMore:
         # Prompt after each page: if path is cwd, just
         # use the file name else the whole path:
         if self.path.parent == cwd.parent:
-            prompt = self.path.name
+            self.prompt = self.path.name
         else:
-            prompt = str(self.path)
+            self.prompt = str(self.path)
             
         try:
-            df = pd.read_feather(self.path)
+            self.df = pd.read_feather(self.path)
         except Exception as _e:
             print("Cannot find or open file")
             sys.exit()
@@ -81,16 +85,26 @@ class FMore:
         if unittesting:
             return 
         
-        pager = Pager(df, self.term_lines, term_cols=self.term_cols, out_stream=out_stream)
+        self.pager = Pager(self.df, self.term_lines, term_cols=self.term_cols, out_stream=self.out_stream)
         
+        #self.page()
+        
+    #------------------------------------
+    # page
+    #-------------------
+    
+    def page(self):
+        '''
+        Pages through self.df until user enters 'q'
+        '''
         while True:
             # Print one page
             try:
-                next(pager)
+                next(self.pager)
             except StopIteration:
-                action_char = pager.getchr(prompt + '(END)')
+                action_char = self.pager.getchr(self.prompt + '(END)')
             else:
-                action_char = pager.getchr(prompt)
+                action_char = self.pager.getchr(self.prompt)
             
             # Return or spacebar?
             if action_char in ['\n', u"\u0020", 'n']:
@@ -98,20 +112,22 @@ class FMore:
             if action_char in ['Q', 'q']:
                 return
             if action_char in ['B', 'b']:
-                pager.back_one_page()
+                self.pager.back_one_page()
                 continue
             if action_char in ['S', 's']:
-                pager.beginning()
+                self.pager.beginning()
                 continue
             if action_char in ['E', 'e']:
-                pager.end()
+                self.pager.end()
                 continue
             if action_char in ['H', 'h']:
                 # Help info:
-                out_stream.write(help_str + '\n')
+                self.out_stream.write(self.help_str + '\n')
                 # Wait for user to be done reading:
-                pager.getchr()
+                self.pager.getchr()
                 continue
+        
+#  -------------------------- Class Pager --------------            
                 
 class Pager:
     '''
@@ -167,6 +183,33 @@ class Pager:
             num_col_lines)
 
     #------------------------------------
+    # logical_page_by_row
+    #-------------------
+    
+    def logical_page_by_row(self, row_num):
+        '''
+        Given a row number in our dataframe, return the 
+        number of the logical page where the row is included.
+        
+        If the row number is larger than length of the 
+        dataframe, return the last logical page number.
+        
+        :param row_num: number of row in the dataframe
+        :type row_num: int
+        :return number of logical page where the row occurs
+        :rtype int
+        '''
+
+        # If row number beyond last row of the df,
+        # return the last logical page number: 
+        if row_num >= len(self.df):
+            return self.pages_list[-1]
+        
+        page_num = bisect.bisect_left(self.pages_list, row_num, key=lambda key : self.pindex[key][1]-1)
+
+        return page_num
+
+    #------------------------------------
     # pagination_cache
     #-------------------
         
@@ -219,6 +262,8 @@ class Pager:
             # the length of the df. Therefore the min():
             pcache[page_num] = (row_num, upper_row)
 
+        # Convenience list of the logical page range:
+        self.pages_list = list(pcache.keys())
         return pcache
 
     #------------------------------------
@@ -327,7 +372,7 @@ class Pager:
     #-------------------
         
     def __iter__(self):
-        return Self
+        return self
     
     #------------------------------------
     # __next__
@@ -341,17 +386,39 @@ class Pager:
             self.cur_page = len(self.pindex)
             raise StopIteration()
 
+
+        self.show_page(self.cur_page)
+        
+        self.cur_page += 1
+
+    #------------------------------------
+    # show_page
+    #-------------------
+    
+    def show_page(self, page_num):
+        '''
+        Given the number of a logical page, display df
+        rows for that page. If page_num is zero, then
+        first print the column headers.
+        
+        :param page_num: logical page number to display
+        :type page_num: int
+        '''
+        
+        if type(page_num) != int or page_num > self.pages_list[-1]:
+            raise ValueError(f"Logical page number must be an in between 0 and {self.pages_list[-1]}")
+        
         # String for empty space between column names,
         # or column values:
         pad_spaces = ' '*self.inter_column_padding
 
-        if self.cur_page == 0:
+        if page_num == 0:
             # Print the col header first:
             col_str = pad_spaces.join(self.df.columns)
             # No leading row number, therefore the None:
             self._write_tab_row(None, col_str)
         
-        start_row, stop_row = self.pindex[self.cur_page]
+        start_row, stop_row = self.pindex[page_num]
         df_excerpt = self.df.iloc[start_row : stop_row]
         
         for row_num, row in df_excerpt.iterrows():
@@ -360,7 +427,8 @@ class Pager:
             # Separate the col values by pad_spaces
             row_str = pad_spaces.join(val_strings)
             self._write_tab_row(row_num, row_str)
-        self.cur_page += 1
+        
+
     
     #------------------------------------
     # _num_wrapped_lines
@@ -384,11 +452,13 @@ class Pager:
         saved_stream = self.out_stream
         try:
             self.out_stream = buf
+            sys.stderr = buf
             self._write_tab_row(row_num, line)
             wrapped_str = buf.getvalue()
         finally:
             buf.close()
             self.out_stream = saved_stream
+            sys.stderr = sys.__stderr__
         
         # Count number of newlines (of which there
         # will be one at the end)
