@@ -1,12 +1,13 @@
 [build-system]
 
-requires = ["setuptools >= 64", "cython", "wheel"]
+requires = ["setuptools >= 64", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 
 name = "feather_tools"
 description = "Scripts to use for pyarrow feather files in a Linux terminal window"
-version = "0.1.0"
+version = "0.3.0"
 readme  = "README.md"
 authors = [
   {name = "Andreas Paepcke", email = "paepcke@cs.stanford.edu"}
@@ -23,8 +24,6 @@ dependencies = [
 requires-python = ">= 3.11"
 
 [project.urls]
-
-Homepage = "https://github.com/paepcke/feather_tools"
-Documentation = "https://github.com/paepcke/feather_tools"
-Repository = "https://github.com/paepcke/feather_tools"
+Homepage = "https://github.com/paepcke/feather-tools"
+Documentation = "https://github.com/paepcke/feather-tools"
 

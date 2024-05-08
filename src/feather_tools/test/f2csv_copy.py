@@ -15,7 +15,7 @@ import argparse
 import os
 import sys
 
-from feather.ftools_workhorse import FToolsWorkhorse
+from feather_tools.ftools_workhorse import FToolsWorkhorse
 from numpy.lib._iotools import str2bool
 
 #------------------------------------

@@ -31,7 +31,7 @@ class FToolsWorkhorse:
         '''
         
         
-        :param path: location of dataframe .feather file. Maybe
+        :param path: location of dataframe .feather_tools file. Maybe
             absolute, or relative to current directory
         :type path: str
         :param lines: number of lines per page. If None, 

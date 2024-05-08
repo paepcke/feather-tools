@@ -15,7 +15,7 @@ import argparse
 import os
 import sys
 
-from feather.ftools_workhorse import FToolsWorkhorse
+from feather_tools.ftools_workhorse import FToolsWorkhorse
 from numpy.lib._iotools import str2bool
 
 #------------------------------------
@@ -53,13 +53,7 @@ def main(**kwargs):
         kwargs['path_or_buf'] = sys.stdout
         
     workhorse = FToolsWorkhorse(src_file, out_stream=out_stream)
-    # If the index is to be included in the .csv,
-    # and no column name is given for that column,
-    # add one:
     
-    # if kwargs['index']:
-    #     if kwargs['index_label'] is None:
-    #         kwargs['index_label'] = 'Row Label'
     workhorse.df.to_csv(**kwargs)
 
 #------------------------------------
@@ -103,9 +97,11 @@ if __name__ == '__main__':
                         default=None,
                         help='columns to include')
     parser.add_argument('--header',
+                        type=str2bool,
                         default=True,
                         help='include the column names')
     parser.add_argument('--index',
+                        type=str2bool,
                         default=True,
                         help='write row names')
     parser.add_argument('--index_label',
@@ -139,6 +135,7 @@ if __name__ == '__main__':
                         default=None,
                         help='format string for datetime objects')
     parser.add_argument('--doublequote',
+                        type=str2bool,
                         default=True,
                         help='control quoting of quotechar inside fields')
     parser.add_argument('--escapechar',
@@ -163,10 +160,6 @@ if __name__ == '__main__':
         
     args_dict = args.__dict__
     
-    # Turn boolean option values into true booleans:
-    for option in ['header', 'index', 'doublequote']:
-        args_dict[option] = str2bool(args_dict[option])
-
     
     main(**args_dict)
     

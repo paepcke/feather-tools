@@ -24,7 +24,7 @@ import argparse
 import os
 import sys
 
-from feather.ftools_workhorse import FToolsWorkhorse
+from feather_tools.ftools_workhorse import FToolsWorkhorse
 
 def main(args, term_lines=None, term_cols=None, out_stream=sys.stdout):
     '''

@@ -4,12 +4,12 @@ Created on May 1, 2024
 @author: paepcke
 '''
 from collections import namedtuple
-from feather.test.f2csv_copy import main as f2csv_main
-from feather.test.fmore_copy import main as fmore_main
-from feather.test.ftail_copy import main as ftail_main
-from feather.test.fwc_copy import main as fwc_main
+from feather_tools.test.f2csv_copy import main as f2csv_main
+from feather_tools.test.fless_copy import main as fless_main
+from feather_tools.test.ftail_copy import main as ftail_main
+from feather_tools.test.fwc_copy import main as fwc_main
 
-from feather.ftools_workhorse import Pager, FToolsWorkhorse
+from feather_tools.ftools_workhorse import Pager, FToolsWorkhorse
 from tempfile import NamedTemporaryFile
 from unittest.mock import patch
 import io
@@ -22,7 +22,7 @@ import unittest
 TEST_ALL = True
 #TEST_ALL = False
 
-class FMoreTester(unittest.TestCase):
+class FlessTester(unittest.TestCase):
 
 
     def setUp(self):
@@ -129,10 +129,10 @@ class FMoreTester(unittest.TestCase):
     # @unittest.skipIf(TEST_ALL != True, 'skipping temporarily')
     # def test_paging(self):
     #
-    #     #_fmore = FMore(self.path_narrow_and_short.name)
-    #     _fmore = FMore(self.path_wide_and_long.name, lines=38, cols=111)
-    #     #_fmore = FMore(self.path_narrow_and_short.name)
-    #     #_fmore = FMore(self.path_wide_and_short.name)
+    #     #_fless = Fless(self.path_narrow_and_short.name)
+    #     _fless = Fless(self.path_wide_and_long.name, lines=38, cols=111)
+    #     #_fless = Fless(self.path_narrow_and_short.name)
+    #     #_fless = Fless(self.path_wide_and_short.name)
 
 
     #------------------------------------
@@ -251,8 +251,8 @@ class FMoreTester(unittest.TestCase):
     
     @unittest.skipIf(TEST_ALL != True, 'skipping temporarily')
     def test_logical_page_by_row(self):
-        fmore = FToolsWorkhorse(self.path_wide_and_long.name, lines=38, cols=111)
-        pager = fmore.pager
+        fless = FToolsWorkhorse(self.path_wide_and_long.name, lines=38, cols=111)
+        pager = fless.pager
         key_list = list(pager.pindex.keys())
         
         row_num = 0
@@ -382,25 +382,25 @@ class FMoreTester(unittest.TestCase):
             sys.stdout = sys.__stdout__
 
     #------------------------------------
-    # test_fmore
+    # test_fless
     #-------------------
     
     @unittest.skipIf(TEST_ALL != True, 'skipping temporarily')
-    def test_fmore(self):
+    def test_fless(self):
         
-        FmoreArgs = namedtuple('FmoreArgs', ['src_file'])
+        FlessArgs = namedtuple('FlessArgs', ['src_file'])
         test_term_lines = 24
         test_term_cols  = 80
         
         try:
             buf = io.StringIO()
-            args = FmoreArgs(self.path_narrow_and_short.name)
+            args = FlessArgs(self.path_narrow_and_short.name)
             
             # Ask for more tail lines than the df is long (the default 10):
-            with patch('feather.ftools_workhorse.Pager.getchr') as mock_input:
+            with patch('feather_tools.ftools_workhorse.Pager.getchr') as mock_input:
                 # Pretend user hit 'q' after first page:
                 mock_input.side_effect = ['q']
-                fmore_main(args, test_term_lines, test_term_cols, buf)
+                fless_main(args, test_term_lines, test_term_cols, buf)
             output = buf.getvalue()
             expected = ('foo    bar    fum\n'
                         '0: 10    100    1000\n'
@@ -414,10 +414,10 @@ class FMoreTester(unittest.TestCase):
             buf.close()
             
             buf = io.StringIO()
-            with patch('feather.ftools_workhorse.Pager.getchr') as mock_input:
+            with patch('feather_tools.ftools_workhorse.Pager.getchr') as mock_input:
                 # Pretend user hits first 'n', then 'q':
                 mock_input.side_effect = ['n', 'q']
-                fmore_main(args, test_term_lines, test_term_cols, buf)
+                fless_main(args, test_term_lines, test_term_cols, buf)
             output = buf.getvalue()
             expected = ('foo    bar    fum\n'
                         '0: 10    100    1000\n'
@@ -430,12 +430,12 @@ class FMoreTester(unittest.TestCase):
             
             # Larger df, where 'next' does show a second page:
 
-            args = FmoreArgs(self.path_wide_and_long.name)
+            args = FlessArgs(self.path_wide_and_long.name)
             buf = io.StringIO()
-            with patch('feather.ftools_workhorse.Pager.getchr') as mock_input:
+            with patch('feather_tools.ftools_workhorse.Pager.getchr') as mock_input:
                 # Pretend user hits first 'n', then 'q':
                 mock_input.side_effect = ['n', 'q']
-                fmore_main(args, test_term_lines, test_term_cols, buf)
+                fless_main(args, test_term_lines, test_term_cols, buf)
             output = buf.getvalue()
             expected = (
                 'Col0    Col1    Col2    Col3    Col4    Col5    Col6    Col7    Col8    Col9   \n'
@@ -482,14 +482,14 @@ class FMoreTester(unittest.TestCase):
             
             # Larger df, press 'n', then 'b', then 'q':
 
-            args = FmoreArgs(self.path_wide_and_long.name)
+            args = FlessArgs(self.path_wide_and_long.name)
             buf = io.StringIO()
-            with patch('feather.ftools_workhorse.Pager.getchr') as mock_input:
+            with patch('feather_tools.ftools_workhorse.Pager.getchr') as mock_input:
                 # Pretend user hits first 'n', then 'b' for 'back 1 page', then 'q'.
                 # That should yield the same displayed paged as hitting 'q' after
                 # the first page:
                 mock_input.side_effect = ['n', 'b', 'q']
-                fmore_main(args, test_term_lines, test_term_cols, buf)
+                fless_main(args, test_term_lines, test_term_cols, buf)
             output = buf.getvalue()
             
             # This test fails. No time to figure this out.
@@ -583,7 +583,7 @@ class FMoreTester(unittest.TestCase):
     
     def create_test_files(self):
         
-        self.tmpdir = tempfile.TemporaryDirectory(dir='/tmp', prefix='fmore_')
+        self.tmpdir = tempfile.TemporaryDirectory(dir='/tmp', prefix='fless_')
         
         self.df_narrow_and_short = pd.DataFrame(
             {'foo' : [10,20,30,40,50,60],
@@ -609,18 +609,18 @@ class FMoreTester(unittest.TestCase):
         self.df_wide_and_long = pd.DataFrame(arr_wide_and_long, columns=self.df_wide_and_short.columns)
         
         self.path_narrow_and_short = tempfile.NamedTemporaryFile( 
-                                                                 suffix='.feather', 
-                                                                 prefix="fmore_", 
+                                                                 suffix='.feather_tools', 
+                                                                 prefix="fless_", 
                                                                  dir=self.tmpdir.name, 
                                                                  delete=False)
         self.path_wide_and_short = tempfile.NamedTemporaryFile(
-                                                               suffix='.feather', 
-                                                               prefix="fmore_", 
+                                                               suffix='.feather_tools', 
+                                                               prefix="fless_", 
                                                                dir=self.tmpdir.name, 
                                                                delete=False)
         self.path_wide_and_long = tempfile.NamedTemporaryFile(
-                                                              suffix='.feather', 
-                                                              prefix="fmore_", 
+                                                              suffix='.feather_tools', 
+                                                              prefix="fless_", 
                                                               dir=self.tmpdir.name, 
                                                               delete=False)
 
