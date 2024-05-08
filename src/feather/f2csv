@@ -160,10 +160,6 @@ if __name__ == '__main__':
         
     args_dict = args.__dict__
     
-    # Turn boolean option values into true booleans:
-    for option in ['header', 'index', 'doublequote']:
-        args_dict[option] = str2bool(args_dict[option])
-
     
     main(**args_dict)
     
