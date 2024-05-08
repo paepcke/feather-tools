@@ -1,9 +1,9 @@
-include src/feather/*.py
-include src/feather/f2csv
-include src/feather/fless
-include src/feather/ftail
-include src/feather/fwc
-include src/feather/test/*.py
-include src/feather/test/simple_feather.feather
+include src/feather_tools/*.py
+include src/feather_tools/f2csv
+include src/feather_tools/fless
+include src/feather_tools/ftail
+include src/feather_tools/fwc
+include src/feather_tools/test/*.py
+include src/feather_tools/test/simple_feather.feather
 exclude __pycache__
-exclude src/feather/__pycache__
+exclude src/feather_tools/__pycache__
