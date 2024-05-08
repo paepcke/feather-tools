@@ -1,5 +1,5 @@
 ## Description
-Stand-along Unix shell command line tools for Apache's .feather formatted files:
+Stand-alone Unix shell command line tools for Apache's .feather formatted files:
 
 ```
 - fmore
