@@ -3,24 +3,40 @@ Created on May 1, 2024
 
 @author: paepcke
 '''
-from collections import namedtuple
-from feather_tools.test.f2csv_copy import main as f2csv_main
-from feather_tools.test.fless_copy import main as fless_main
-from feather_tools.test.ftail_copy import main as ftail_main
-from feather_tools.test.fwc_copy import main as fwc_main
+# Work with copies of the tested files, because 
+# they are without extension, and thus won't work
+# for importing: the copies are of the form
+#   <orig-fname>_copy.py
 
-from feather_tools.ftools_workhorse import Pager, FToolsWorkhorse
-from tempfile import NamedTemporaryFile
-from unittest.mock import patch
+from collections import (
+    namedtuple)
+from feather_tools.ftools_workhorse import (
+    Pager,
+    FToolsWorkhorse)
+from feather_tools.test.f2csv_copy import (
+    main as f2csv_main)
+from feather_tools.test.csv2f_copy import (
+    main as csv2f_main)
+from feather_tools.test.fless_copy import (
+    main as fless_main)
+from feather_tools.test.ftail_copy import (
+    main as ftail_main)
+from feather_tools.test.fwc_copy import (
+    main as fwc_main)
+from tempfile import (
+    NamedTemporaryFile)
+from unittest.mock import (
+    patch)
 import io
 import numpy as np
+import os
 import pandas as pd
 import sys
 import tempfile
 import unittest
 
-TEST_ALL = True
-#TEST_ALL = False
+#********TEST_ALL = True
+TEST_ALL = False
 
 class FlessTester(unittest.TestCase):
 
@@ -578,6 +594,28 @@ class FlessTester(unittest.TestCase):
         finally:
             sys.stdout = sys.__stdout__
             
+    #------------------------------------
+    # test_csv2f
+    #-------------------
+    
+    #********@unittest.skipIf(TEST_ALL != True, 'skipping temporarily')
+    def test_csv2f(self):
+
+        dst_file = os.path.join(self.tmpdir.name, 'csv2f_test.feather')
+        # Write the df we created in create_test_files() to a file
+        # in self.tmpdir:
+        csv_fname = os.path.join(self.tmpdir.name, 'csv2f_test.csv')
+        self.df_narrow_and_short.to_csv(csv_fname)
+        args = {'src_file' : csv_fname,
+                'dst_file' : dst_file,
+                'index_col': 0
+                }
+        
+        csv2f_main(**args)
+        
+        # Read the feather file back:
+        df_recovered = pd.read_feather(dst_file)
+        pd.testing.assert_frame_equal(self.df_narrow_and_short, df_recovered)
         
     # ----------------------- Utilities --------------
     
