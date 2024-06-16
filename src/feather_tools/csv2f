@@ -15,6 +15,7 @@ Usage: csv2f <csv_src_file> <feather-file-name>
 import argparse
 import os
 import sys
+from pathlib import Path
 import pandas as pd
 
 from feather_tools.ftools_workhorse import FToolsWorkhorse
@@ -37,7 +38,11 @@ def main(**kwargs):
     # so that all the remaining kwargs are for 
     # pd.read_csv():
     src_file = kwargs.pop('src_file')
-    dst_file = kwargs.pop('dst_file')
+    try:
+    	dst_file = kwargs.pop('dst_file')
+    except KeyError:
+        src_path = Path(src_file)
+        dst_file = src_path.with_suffix('.feather')
     
     df = pd.read_csv(src_file, **kwargs)
     df.to_feather(dst_file)
@@ -53,10 +58,8 @@ if __name__ == '__main__':
     parser.add_argument('src_file',
                          help='File to convert')
     parser.add_argument('dst_file',
-                         dest='path_or_buf',
-                         default=None,
-                         help='File to of which feather is written')
-    
+                         default='source file with extension changed to .feather',
+                         help='File to which feather is written')
     # These remaining args are for pandas.read_csv()
     parser.add_argument('--delimiter',
                          default=None,

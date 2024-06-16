@@ -13,16 +13,18 @@ from collections import (
 from feather_tools.ftools_workhorse import (
     Pager,
     FToolsWorkhorse)
-from feather_tools.test.f2csv_copy import (
-    main as f2csv_main)
 from feather_tools.test.csv2f_copy import (
     main as csv2f_main)
+from feather_tools.test.f2csv_copy import (
+    main as f2csv_main)
 from feather_tools.test.fless_copy import (
     main as fless_main)
 from feather_tools.test.ftail_copy import (
     main as ftail_main)
 from feather_tools.test.fwc_copy import (
     main as fwc_main)
+from pathlib import (
+    Path)
 from tempfile import (
     NamedTemporaryFile)
 from unittest.mock import (
@@ -35,8 +37,8 @@ import sys
 import tempfile
 import unittest
 
-#********TEST_ALL = True
-TEST_ALL = False
+TEST_ALL = True
+#TEST_ALL = False
 
 class FlessTester(unittest.TestCase):
 
@@ -598,7 +600,7 @@ class FlessTester(unittest.TestCase):
     # test_csv2f
     #-------------------
     
-    #********@unittest.skipIf(TEST_ALL != True, 'skipping temporarily')
+    @unittest.skipIf(TEST_ALL != True, 'skipping temporarily')
     def test_csv2f(self):
 
         dst_file = os.path.join(self.tmpdir.name, 'csv2f_test.feather')
@@ -616,6 +618,18 @@ class FlessTester(unittest.TestCase):
         # Read the feather file back:
         df_recovered = pd.read_feather(dst_file)
         pd.testing.assert_frame_equal(self.df_narrow_and_short, df_recovered)
+        
+        # Now try not supplying a destination to see whether 
+        # the source file root is used with .feather extension:
+        args = {'src_file' : csv_fname,
+                'index_col': 0
+                }
+        expected_dst_fname = Path(csv_fname).with_suffix('.feather')
+        
+        csv2f_main(**args)
+        df_recovered = pd.read_feather(expected_dst_fname)
+        pd.testing.assert_frame_equal(self.df_narrow_and_short, df_recovered)
+         
         
     # ----------------------- Utilities --------------
     
