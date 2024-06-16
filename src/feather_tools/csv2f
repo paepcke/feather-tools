@@ -40,10 +40,13 @@ def main(**kwargs):
     src_file = kwargs.pop('src_file')
     try:
     	dst_file = kwargs.pop('dst_file')
+    	if dst_file is None:
+    	    raise KeyError()
     except KeyError:
         # No dst_file provided: use the src_file
         # with the .csv extension replaced with
         # .feather:
+        
         src_path = Path(src_file)
         dst_file = src_path.with_suffix('.feather')
     
@@ -73,9 +76,9 @@ if __name__ == '__main__':
                                      )
     parser.add_argument('src_file',
                          help='File to convert')
-    parser.add_argument('dst_file',
-                         default='source file with extension changed to .feather',
-                         help='File to which feather is written')
+    parser.add_argument('--dst_file',
+                         default=None,
+                         help='File to which feather is written; default: source file with extension changed to .feather')
     # These remaining args are for pandas.read_csv()
     parser.add_argument('--delimiter',
                          default=None,
@@ -84,7 +87,7 @@ if __name__ == '__main__':
                          default='infer',
                          help='see pandas.read_csv')
     parser.add_argument('--names',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--index_col',
                          default=None,
@@ -129,7 +132,7 @@ if __name__ == '__main__':
                          default=True,
                          help='see pandas.read_csv')
     parser.add_argument('--verbose',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--skip_blank_lines',
                          default=True,
@@ -138,13 +141,13 @@ if __name__ == '__main__':
                          default=None,
                          help='see pandas.read_csv')
     parser.add_argument('--infer_datetime_format',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--keep_date_col',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--date_parser',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--date_format',
                          default=None,
@@ -201,7 +204,7 @@ if __name__ == '__main__':
                          default='error',
                          help='see pandas.read_csv')
     parser.add_argument('--delim_whitespace',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--low_memory',
                          default=True,
@@ -216,7 +219,7 @@ if __name__ == '__main__':
                          default=None,
                          help='see pandas.read_csv')
     parser.add_argument('--dtype_backend',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
 
     args = parser.parse_args()

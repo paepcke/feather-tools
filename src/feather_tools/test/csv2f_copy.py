@@ -84,7 +84,7 @@ if __name__ == '__main__':
                          default='infer',
                          help='see pandas.read_csv')
     parser.add_argument('--names',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--index_col',
                          default=None,
@@ -129,7 +129,7 @@ if __name__ == '__main__':
                          default=True,
                          help='see pandas.read_csv')
     parser.add_argument('--verbose',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--skip_blank_lines',
                          default=True,
@@ -138,13 +138,13 @@ if __name__ == '__main__':
                          default=None,
                          help='see pandas.read_csv')
     parser.add_argument('--infer_datetime_format',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--keep_date_col',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--date_parser',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--date_format',
                          default=None,
@@ -201,7 +201,7 @@ if __name__ == '__main__':
                          default='error',
                          help='see pandas.read_csv')
     parser.add_argument('--delim_whitespace',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
     parser.add_argument('--low_memory',
                          default=True,
@@ -216,7 +216,7 @@ if __name__ == '__main__':
                          default=None,
                          help='see pandas.read_csv')
     parser.add_argument('--dtype_backend',
-                         default=_NoDefault.no_default,
+                         default='_NoDefault.no_default',
                          help='see pandas.read_csv')
 
     args = parser.parse_args()
