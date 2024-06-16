@@ -15,8 +15,8 @@ Usage: csv2f <csv_src_file> <feather-file-name>
 import argparse
 import os
 import sys
-from pathlib import Path
 import pandas as pd
+from pathlib import Path
 
 from feather_tools.ftools_workhorse import FToolsWorkhorse
 from numpy.lib._iotools import str2bool
@@ -27,24 +27,40 @@ from numpy.lib._iotools import str2bool
 
 def main(**kwargs):
     '''
-    The args argument must contain the command line argument 
+    The kwargs argument must contain the command line argument 
     
          'src_file': path to the cvs file
-         'dst_file': path to the destination feather file
 
     '''
 
     # Remove src_file and dst_file from the kwargs,
-    # so that all the remaining kwargs are for 
-    # pd.read_csv():
+    # so that all the remaining kwargs can be passed
+    # to pd.read_csv():
+    
     src_file = kwargs.pop('src_file')
     try:
     	dst_file = kwargs.pop('dst_file')
     except KeyError:
+        # No dst_file provided: use the src_file
+        # with the .csv extension replaced with
+        # .feather:
         src_path = Path(src_file)
         dst_file = src_path.with_suffix('.feather')
     
-    df = pd.read_csv(src_file, **kwargs)
+    # In pd.read_csv some args have default=_NoDefault.no_default
+    # This means that if the command line arg is provided
+    # then that _NoDefault.no_default must be replaced by some
+    # value. Here we remove kwargs from the passed-in list if
+    # argparse delivered the _NoDefault.no_default verbatim. It
+    # means that the user did not provide that kwarg, so neither
+    # will we:
+    
+    new_kwargs = {key : val
+    			  for key, val
+    			  in kwargs.items()
+    			  if val != '_NoDefault.no_default'} 
+    
+    df = pd.read_csv(src_file, **new_kwargs)
     df.to_feather(dst_file)
 
 
