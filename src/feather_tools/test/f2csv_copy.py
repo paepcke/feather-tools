@@ -14,6 +14,8 @@ Usage: f2csv [{-s | --separator} <str>] <feather-file-name>
 import argparse
 import os
 import sys
+from pathlib import Path
+from io import TextIOWrapper
 
 from feather_tools.ftools_workhorse import FToolsWorkhorse
 from numpy.lib._iotools import str2bool
@@ -49,12 +51,15 @@ def main(**kwargs):
 
     out_stream = kwargs['path_or_buf']
     if out_stream is None:
-        out_stream = sys.stdout 
-        kwargs['path_or_buf'] = sys.stdout
-        
-    workhorse = FToolsWorkhorse(src_file, out_stream=out_stream)
-    
-    workhorse.df.to_csv(**kwargs)
+        dst_file = Path(src_file).with_suffix('.csv')
+        out_stream = open(dst_file, 'w')
+        kwargs['path_or_buf'] = out_stream
+    try:
+        workhorse = FToolsWorkhorse(src_file, out_stream=out_stream)
+        workhorse.df.to_csv(**kwargs)
+    finally:
+        if isinstance(out_stream, TextIOWrapper):
+            out_stream.close()
 
 #------------------------------------
 # str2bool

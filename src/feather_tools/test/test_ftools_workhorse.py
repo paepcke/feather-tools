@@ -593,6 +593,16 @@ class FlessTester(unittest.TestCase):
             df_recovered = pd.read_csv(out_file.name)
             pd.testing.assert_frame_equal(df_recovered, self.df_narrow_and_short)
     
+            # Does outfile default to <in-file>.csv when path_or_buf is None:
+            src_file = self.path_narrow_and_short.name
+            args = {'src_file' : src_file,
+                    'path_or_buf' : None
+                    }
+            
+            f2csv_main(**args)
+            dst_file = Path(src_file).with_suffix('.csv')
+            self.assertTrue(os.path.exists(dst_file))
+            
         finally:
             sys.stdout = sys.__stdout__
             

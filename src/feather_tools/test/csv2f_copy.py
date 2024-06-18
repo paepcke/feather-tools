@@ -39,7 +39,7 @@ def main(**kwargs):
     
     src_file = kwargs.pop('src_file')
     try:
-    	dst_file = kwargs.pop('dst_file')
+        dst_file = kwargs.pop('dst_file')
     except KeyError:
         # No dst_file provided: use the src_file
         # with the .csv extension replaced with
