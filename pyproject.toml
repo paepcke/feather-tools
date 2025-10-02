@@ -6,11 +6,14 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 include-package-data = true
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [project]
 
 name = "feather_tools"
 description = "Scripts to use for pyarrow feather files in a Linux terminal window"
-version = "0.6.0"
+version = "1.0.1"
 readme  = "README.md"
 authors = [
   {name = "Andreas Paepcke", email = "paepcke@cs.stanford.edu"}
@@ -19,12 +22,24 @@ maintainers = [
   {name = "Andreas Paepcke", email = "paepcke@cs.stanford.edu"}
   ]
 license = {text = "MIT License"}
+requires-python = ">= 3.11"
 
 dependencies = [
     "pandas>=2.2.2",
     "pyarrow>=16.0.0"
     ]
-requires-python = ">= 3.11"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+[project.scripts]
+csv2f = "feather_tools.csv2f:main"
+f2csv = "feather_tools.f2csv:main"
+fless = "feather_tools.fless:main"
+ftail = "feather_tools.ftail:main"
+fwc   = "feather_tools.fwc:main"
 
 [project.urls]
 Homepage = "https://github.com/paepcke/feather-tools"

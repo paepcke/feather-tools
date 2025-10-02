@@ -1,7 +1,6 @@
 '''
 Created on May 1, 2024
-
-@author: paepcke
+@author: Andreas Paepcke
 
 TODO:
    o Long rows: early rows not shown
