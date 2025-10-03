@@ -13,15 +13,15 @@ from collections import (
 from feather_tools.ftools_workhorse import (
     Pager,
     FToolsWorkhorse)
-from feather_tools.test.csv2f_copy import (
+from feather_tools.csv2f import (
     main as csv2f_main)
-from feather_tools.test.f2csv_copy import (
+from feather_tools.f2csv import (
     main as f2csv_main)
-from feather_tools.test.fless_copy import (
+from feather_tools.fless import (
     main as fless_main)
-from feather_tools.test.ftail_copy import (
+from feather_tools.ftail import (
     main as ftail_main)
-from feather_tools.test.fwc_copy import (
+from feather_tools.fwc import (
     main as fwc_main)
 from pathlib import (
     Path)
@@ -551,8 +551,15 @@ class FlessTester(unittest.TestCase):
             args = {'src_file' : self.path_narrow_and_short.name,
                     'path_or_buf' : buf
                     }
-            
-            f2csv_main(**args)
+
+            # Pass a dummy args object to skip command-line parsing
+            # in main(). Without this dummy, main() would include 
+            # arguments, such as '--udiscovery' that are added by the
+            # unittest framework. We would then get an 'unrecognized option'
+            # error that we don't deserve. Any non-None value
+            # would do:
+
+            f2csv_main(args=object(), **args)
             
             output = buf.getvalue()
             expected0 = (',foo,bar,fum\n'
@@ -570,7 +577,14 @@ class FlessTester(unittest.TestCase):
                     'path_or_buf' : buf,
                     'index_label' : 'Rows'
                     }
-            f2csv_main(**args)
+            # Pass a dummy args object to skip command-line parsing
+            # in main(). Without this dummy, main() would include 
+            # arguments, such as '--udiscovery' that are added by the
+            # unittest framework. We would then get an 'unrecognized option'
+            # error that we don't deserve. Any non-None value
+            # would do:
+
+            f2csv_main(args=object(), **args)
             
             output = buf.getvalue()
             expected1 = ('Rows,foo,bar,fum\n'
@@ -589,7 +603,7 @@ class FlessTester(unittest.TestCase):
                     'path_or_buf' : out_file.name,
                     'index' : False
                     }
-            f2csv_main(**args)
+            f2csv_main(args=object(), **args)
             df_recovered = pd.read_csv(out_file.name)
             pd.testing.assert_frame_equal(df_recovered, self.df_narrow_and_short)
     
@@ -599,7 +613,7 @@ class FlessTester(unittest.TestCase):
                     'path_or_buf' : None
                     }
             
-            f2csv_main(**args)
+            f2csv_main(args=object(), **args)
             dst_file = Path(src_file).with_suffix('.csv')
             self.assertTrue(os.path.exists(dst_file))
             
@@ -623,7 +637,13 @@ class FlessTester(unittest.TestCase):
                 'index_col': 0
                 }
         
-        csv2f_main(**args)
+        # Pass a dummy args object to skip command-line parsing
+        # in main(). Without this dummy, main() would include 
+        # arguments, such as '--udiscovery' that are added by the
+        # unittest framework. We would then get an 'unrecognized option'
+        # error that we don't deserve. Any non-None value
+        # would do:
+        csv2f_main(args=object(), **args)
         
         # Read the feather file back:
         df_recovered = pd.read_feather(dst_file)
@@ -635,8 +655,10 @@ class FlessTester(unittest.TestCase):
                 'index_col': 0
                 }
         expected_dst_fname = Path(csv_fname).with_suffix('.feather')
-        
-        csv2f_main(**args)
+
+        # See similar call above for explanation of
+        # 'args=object()':        
+        csv2f_main(args=object(), **args)
         df_recovered = pd.read_feather(expected_dst_fname)
         pd.testing.assert_frame_equal(self.df_narrow_and_short, df_recovered)
          
