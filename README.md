@@ -7,6 +7,7 @@ Stand-alone Unix shell command line tools for Apache's .feather formatted files:
 - ftail
 - fwc (-l)
 - f2csv
+- csv2f
 ```
 
 Each tool operates in the spirit of the analogous Unix shell command. Only the most basic uses of these original Unix tools are suported in their *f* version. For example, the `fwc` command operates like `wc -l`, i.e. it displays the number of data rows. But `wc -c` is not provided.
