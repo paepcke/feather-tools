@@ -13,7 +13,7 @@ where = ["src"]
 
 name = "feather_tools"
 description = "Scripts to use for pyarrow feather files in a Linux terminal window"
-version = "1.0.3"
+version = "1.1.0"
 readme  = "README.md"
 authors = [
   {name = "Andreas Paepcke", email = "paepcke@cs.stanford.edu"}
