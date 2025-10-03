@@ -47,7 +47,7 @@ Displays the last *n* rows of the .feather file. Default is the lesser of 10, an
 
 Is analogout to the Unix `wc -l`, and shows the number of data rows, not counting the column header.
 
-### `f2csv <src-fpath> [<dst-fpath>] `
+### `f2csv <src-fpath> [<dst-fpath>]`
 
 Writes a .csv file that contains the .feather data. Default separator is comma. Default output is stdout.
 
@@ -86,4 +86,9 @@ If you clone this repo to make changes: all Python imports are relative to `<pro
 
 ## Testing
 
-Running nose2 in the project root runs the tests. One abnormality: in order to blend with Unix convention, the command files are without a '.py' extension. Examples: `fless`, `fwc`. The downside is that unittest files cannot load Python files without .py extensions. Copies of the command files are therefore placed in the test subdirectory. The unittests run on those copies. If changes are made to the command files, then those copies must be updated before testing. Symlinks are not an option, because pip cannot recreate them during installation.
+To test the code, clone this repo, and install the test dependency:
+
+```bash
+pip install .[test]
+pytest
+```
