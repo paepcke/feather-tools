@@ -12,8 +12,8 @@ where = ["src"]
 [project]
 
 name = "feather_tools"
-description = "Scripts to use for pyarrow feather files in a Linux terminal window"
-version = "1.1.0"
+description = "CLI utilities for Apache Arrow feather and Parquet files in a Linux terminal"
+version = "2.0.0"
 readme  = "README.md"
 authors = [
   {name = "Andreas Paepcke", email = "paepcke@cs.stanford.edu"}
@@ -35,13 +35,22 @@ test = [
 ]
 
 [project.scripts]
+# Feather-family entry points (default output: .feather)
 csv2f = "feather_tools.csv2f:main"
 f2csv = "feather_tools.f2csv:main"
 fless = "feather_tools.fless:main"
 ftail = "feather_tools.ftail:main"
 fwc   = "feather_tools.fwc:main"
 
+# Parquet-family entry points (default output: .parquet)
+# All five point to the same functions; sys.argv[0] determines
+# the default format when no explicit --format / extension is given.
+csv2p = "feather_tools.csv2f:main"
+p2csv = "feather_tools.f2csv:main"
+pless = "feather_tools.fless:main"
+ptail = "feather_tools.ftail:main"
+pwc   = "feather_tools.fwc:main"
+
 [project.urls]
 Homepage = "https://github.com/paepcke/feather-tools"
 Documentation = "https://github.com/paepcke/feather-tools"
-

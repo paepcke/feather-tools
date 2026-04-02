@@ -3,11 +3,20 @@
 Created on May 7, 2024
 @author: Andreas Paepcke
 
-Writes the dataframe contained in a .csv file to
-another file as .feather.
+Converts a CSV file to feather or parquet format.
 
-Usage: csv2f <csv_src_file> <feather-file-name> 
-   may use switches appropriated for pd.read_csv()
+The output format is determined in order of precedence:
+  1. The extension of --dst_file if provided
+  2. The --format flag if provided
+  3. The name of the script itself:
+       csv2f  → .feather (default)
+       csv2p  → .parquet (default)
+
+Usage:
+  csv2f <csv_src_file> [--dst_file <path>] [--format {feather,parquet}] [pandas options...]
+  csv2p <csv_src_file> [--dst_file <path>] [--format {feather,parquet}] [pandas options...]
+
+Options not listed here are forwarded verbatim to pandas.read_csv().
 '''
 
 import argparse
@@ -17,35 +26,48 @@ from pathlib import Path
 
 import pandas as pd
 
+from feather_tools.ftools_workhorse import default_format_from_invocation, SUPPORTED_EXTS
+
 
 def main(args=None, **kwargs):
     '''
-    Convert a CSV file to feather format.
-    
-    The kwargs argument must contain the command line argument:
-         'src_file': path to the csv file
-    
-    :param args: argparse argument structure. If None, will parse sys.argv.
-    :type args: union[None | argparse.Namespace]
-    :param kwargs: additional keyword arguments for pd.read_csv() when called
-                   programmatically (for testing)
-    '''
-    
-    if args is None:
-        # Parse command line arguments
-        description = "Convert .csv file to .feather. Options are same as pandas.read_csv()"
+    Convert a CSV file to feather or parquet format.
 
+    The output format is inferred from (in order of priority): the
+    extension of ``dst_file``, the ``--format`` flag, and the name of
+    the invoked script (``csv2f`` → feather, ``csv2p`` → parquet).
+
+    :param args: pre-parsed argparse namespace; if None, ``sys.argv`` is parsed.
+    :type args: argparse.Namespace or None
+    :param kwargs: used when called programmatically; must contain at least
+        ``src_file``.  All other keys are forwarded to :func:`pandas.read_csv`.
+    '''
+
+    if args is None:
+        invocation_default = default_format_from_invocation()
+
+        description = (
+            "Convert a .csv file to .feather or .parquet.\n"
+            "Options not listed below are forwarded to pandas.read_csv().\n"
+            f"Invoked as '{os.path.basename(sys.argv[0])}' → default format: {invocation_default}"
+        )
         parser = argparse.ArgumentParser(
             prog=os.path.basename(sys.argv[0]),
             formatter_class=argparse.RawTextHelpFormatter,
             description=description
         )
-        parser.add_argument('src_file', help='File to convert')
+        parser.add_argument('src_file', help='CSV file to convert')
         parser.add_argument('--dst_file',
-                           default=None,
-                           help='File to which feather is written; default: source file with extension changed to .feather')
-        
-        # These remaining args are for pandas.read_csv()
+                            default=None,
+                            help='Output path. Extension overrides --format.\n'
+                                 'Default: src path with extension replaced.')
+        parser.add_argument('--format',
+                            dest='fmt',
+                            choices=['feather', 'parquet'],
+                            default=invocation_default,
+                            help='Output format (default: inferred from script name)')
+
+        # pandas.read_csv pass-through options
         parser.add_argument('--delimiter', default=None, help='see pandas.read_csv')
         parser.add_argument('--header', default='infer', help='see pandas.read_csv')
         parser.add_argument('--names', default='_NoDefault.no_default', help='see pandas.read_csv')
@@ -66,13 +88,9 @@ def main(args=None, **kwargs):
         parser.add_argument('--verbose', default='_NoDefault.no_default', help='see pandas.read_csv')
         parser.add_argument('--skip_blank_lines', default=True, help='see pandas.read_csv')
         parser.add_argument('--parse_dates', default=None, help='see pandas.read_csv')
-        parser.add_argument('--infer_datetime_format', default='_NoDefault.no_default', help='see pandas.read_csv')
-        parser.add_argument('--keep_date_col', default='_NoDefault.no_default', help='see pandas.read_csv')
-        parser.add_argument('--date_parser', default='_NoDefault.no_default', help='see pandas.read_csv')
         parser.add_argument('--date_format', default=None, help='see pandas.read_csv')
         parser.add_argument('--dayfirst', default=False, help='see pandas.read_csv')
         parser.add_argument('--cache_dates', default=True, help='see pandas.read_csv')
-        parser.add_argument('--iterator', default=False, help='see pandas.read_csv')
         parser.add_argument('--chunksize', default=None, help='see pandas.read_csv')
         parser.add_argument('--compression', default='infer', help='see pandas.read_csv')
         parser.add_argument('--thousands', default=None, help='see pandas.read_csv')
@@ -87,7 +105,6 @@ def main(args=None, **kwargs):
         parser.add_argument('--encoding_errors', default='strict', help='see pandas.read_csv')
         parser.add_argument('--dialect', default=None, help='see pandas.read_csv')
         parser.add_argument('--on_bad_lines', default='error', help='see pandas.read_csv')
-        parser.add_argument('--delim_whitespace', default='_NoDefault.no_default', help='see pandas.read_csv')
         parser.add_argument('--low_memory', default=True, help='see pandas.read_csv')
         parser.add_argument('--memory_map', default=False, help='see pandas.read_csv')
         parser.add_argument('--float_precision', default=None, help='see pandas.read_csv')
@@ -95,45 +112,45 @@ def main(args=None, **kwargs):
         parser.add_argument('--dtype_backend', default='_NoDefault.no_default', help='see pandas.read_csv')
 
         args = parser.parse_args()
-        
+
         if not os.path.exists(args.src_file):
             print(f"File {args.src_file} not found")
             sys.exit(1)
-        
+
         kwargs = args.__dict__
-    
-    # Remove src_file and dst_file from the kwargs,
-    # so that all the remaining kwargs can be passed
-    # to pd.read_csv():
-    
+
     src_file = kwargs.pop('src_file')
+    fmt      = kwargs.pop('fmt', default_format_from_invocation())
+
     try:
         dst_file = kwargs.pop('dst_file')
-        if dst_file is None:
-            raise KeyError()
     except KeyError:
-        # No dst_file provided: use the src_file
-        # with the .csv extension replaced with
-        # .feather:
-        
-        src_path = Path(src_file)
-        dst_file = src_path.with_suffix('.feather')
-    
-    # In pd.read_csv some args have default=_NoDefault.no_default
-    # This means that if the command line arg is provided
-    # then that _NoDefault.no_default must be replaced by some
-    # value. Here we remove kwargs from the passed-in list if
-    # argparse delivered the _NoDefault.no_default verbatim. It
-    # means that the user did not provide that kwarg, so neither
-    # will we:
-    
-    new_kwargs = {key: val
-                  for key, val
-                  in kwargs.items()
-                  if val != '_NoDefault.no_default'} 
-    
-    df = pd.read_csv(src_file, **new_kwargs)
-    df.to_feather(dst_file)
+        dst_file = None
+
+    # Determine destination path and format
+    if dst_file is None:
+        ext = '.feather' if fmt == 'feather' else '.parquet'
+        dst_file = Path(src_file).with_suffix(ext)
+    else:
+        # Let the dst_file extension override the fmt flag
+        dst_ext = Path(dst_file).suffix.lower()
+        if dst_ext in {'.feather'}:
+            fmt = 'feather'
+        elif dst_ext in {'.parquet', '.pq'}:
+            fmt = 'parquet'
+        # else: trust --format / invocation default
+
+    # Strip _NoDefault sentinel values — pandas uses its own internal sentinel
+    csv_kwargs = {k: v for k, v in kwargs.items() if v != '_NoDefault.no_default'}
+
+    df = pd.read_csv(src_file, **csv_kwargs)
+
+    if fmt == 'feather':
+        df.to_feather(dst_file)
+    else:
+        df.to_parquet(dst_file, index=False)
+
+    print(f"Written: {dst_file}")
 
 
 if __name__ == '__main__':
