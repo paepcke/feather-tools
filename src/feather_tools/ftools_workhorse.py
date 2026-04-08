@@ -24,6 +24,9 @@ FEATHER_EXTS  = {'.feather'}
 PARQUET_EXTS  = {'.parquet', '.pq'}
 SUPPORTED_EXTS = FEATHER_EXTS | PARQUET_EXTS
 
+# Size limits for strings and container size limits
+# in .parquet files:
+PARQUET_FILES_THRIFT_LIMIT = 1_000_000_000
 
 def infer_format(path):
     '''
@@ -78,7 +81,10 @@ def load_df(path):
     fmt = infer_format(path)
     if fmt == 'feather':
         return pd.read_feather(path)
-    return pd.read_parquet(path)
+    return pd.read_parquet(path,
+                           thrift_string_size_limit=PARQUET_FILES_THRIFT_LIMIT,
+                           thrift_container_size_limit=PARQUET_FILES_THRIFT_LIMIT
+                           )
 
 
 #  -------------------------- Class FToolsWorkhorse --------------
